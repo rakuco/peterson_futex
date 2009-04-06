@@ -166,6 +166,7 @@ void* f_thread_3(void *v) {
 
 int main(int argc, char *argv[])
 {
+  size_t i;
   int numthreads;
   pthread_t thr0, thr1, thr2, thr3;
 
@@ -174,6 +175,14 @@ int main(int argc, char *argv[])
     cli_show_usage();
     exit(2);
   }
+
+#if 0
+  for (i = 0; i < numthreads; i++)
+    pthread_create(&thread_list[i], NULL, f_thread, NULL);
+
+  for (i = 0; i < numthreads; i++)
+    pthread_join(thread_list[i], NULL);
+#endif
 
   pthread_create(&thr0, NULL, f_thread_0, NULL);
   pthread_create(&thr1, NULL, f_thread_1, NULL);
