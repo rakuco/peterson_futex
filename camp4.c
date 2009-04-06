@@ -25,6 +25,8 @@
 #include <sys/types.h>
 #include <limits.h>
 
+#include "cli.h"
+
 /* Retorna -1 se o futex não bloqueou e 
             0 caso contrário */
 int futex_wait(void *addr, int val1) {
@@ -176,9 +178,16 @@ void* f_thread_3(void *v) {
   return NULL;
 }
 
-int main() {
-
+int main(int argc, char *argv[])
+{
+  int numthreads;
   pthread_t thr0, thr1, thr2, thr3;
+
+  numthreads = cli_get_thread_count(argc, argv);
+  if (!numthreads) {
+    cli_show_usage();
+    exit(2);
+  }
 
   pthread_create(&thr0, NULL, f_thread_0, NULL);
   pthread_create(&thr1, NULL, f_thread_1, NULL);
@@ -192,4 +201,3 @@ int main() {
 
   return 0;
 }
-
