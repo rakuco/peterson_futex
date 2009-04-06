@@ -9,7 +9,6 @@
 #include "cli.h"
 
 static const char *const usage_message =
-  "\n"
   "MC514 - Lab1\n"
   "Raphael Kubo da Costa, RA 072201\n"
   "\n"
