@@ -15,31 +15,16 @@
  */
 
 #define _GNU_SOURCE
+
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <linux/futex.h>
-#include <sys/time.h>
-#include <sys/syscall.h>
-#include <sys/types.h>
 #include <limits.h>
 
 #include "cli.h"
-
-/* Retorna -1 se o futex não bloqueou e 
-            0 caso contrário */
-int futex_wait(void *addr, int val1) {
-  return syscall(SYS_futex, addr, FUTEX_WAIT, 
-                 val1, NULL, NULL, 0);
-}
-
-/* Retorna o número de threads que foram acordadas */
-int futex_wake(void *addr, int n) {
-    return syscall(SYS_futex, addr, FUTEX_WAKE, 
-                   n, NULL, NULL, 0);
-}
+#include "futex.h"
 
 /* Número de vezes que uma thread deve entrar na região crítica. */
 #define N_VEZES 15
