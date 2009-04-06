@@ -3,7 +3,7 @@ CFLAGS=-Wall -g -ansi -pedantic
 LDFLAGS=-pthread
 
 OUTPUT=camp
-SRC=camp4.c cli.c
+SRC=camp.c cli.c
 
 DOXYGEN=doxygen
 DOXYCONF=doxygen.conf
