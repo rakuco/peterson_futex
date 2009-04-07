@@ -18,6 +18,7 @@ int futex_wait(void *addr, int val1);
 /**
  * Wrapper around SYS_futex with FUTEX_WAKE.
  *
+ * @param  n The number of threads to awake (or INT_MAX to wake all)
  * @return The number of threads which were awakened.
  */
 int futex_wake(void *addr, int n);
