@@ -27,7 +27,7 @@
 #include "futex.h"
 
 /* Número de vezes que uma thread deve entrar na região crítica. */
-#define N_VEZES 15
+#define N_VEZES 3
 
 /* Variável compartilhada */
 volatile int s = 0;
@@ -45,6 +45,17 @@ int interesse_01[2] = { 0, 0 };
    entre a thread 2 e a thread 3.      */
 int ultimo_23 = 0;
 int interesse_23[2] = { 0, 0 };
+
+void *f_thread(void *v)
+{
+  int i;
+  int thread_id = *(int *)v;
+
+  for (i = 0; i < N_VEZES; i++) {
+  }
+
+  return NULL;
+}
 
 /* Função para a thread 0 */
 void* f_thread_0(void *v) {
