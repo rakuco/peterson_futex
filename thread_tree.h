@@ -25,6 +25,7 @@ void thread_level_free(ThreadLevel *level);
 ThreadLevel *thread_level_new(size_t numthreads);
 
 void thread_tree_free(ThreadTree *tree);
+size_t thread_tree_get_height(ThreadTree *tree);
 ThreadTree *thread_tree_new(size_t numthreads);
 
 #endif /* __THREAD_TREE_H */

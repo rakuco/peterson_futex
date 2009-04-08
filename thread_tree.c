@@ -47,6 +47,13 @@ void thread_tree_free(ThreadTree *tree)
   }
 }
 
+size_t thread_tree_get_height(ThreadTree *tree)
+{
+  assert(tree);
+
+  return tree->height;
+}
+
 ThreadTree *thread_tree_new(size_t numthreads)
 {
   size_t height = 0;
