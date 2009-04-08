@@ -25,7 +25,7 @@ size_t cli_get_thread_count(int argc, char *argv[])
     return 0;
 
   count = strtol(argv[1], &error, 10);
-  if ((*error != '\0') || (count < 0)) {
+  if ((*error != '\0') || (count <= 0)) {
     fprintf(stderr, "Error: invalid thread number.\n");
     return 0;
   }
