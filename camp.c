@@ -35,8 +35,6 @@
 /* Variável compartilhada */
 volatile int s = 0;
 
-pthread_t *thread_list;
-
 /* Variáveis de controle para a final. */
 int ultimo_final = 0;
 int interesse_final[2] = { 0, 0 };
@@ -230,22 +228,20 @@ int main(int argc, char *argv[])
     exit(2);
   }
 
-  thread_list = MEM_ALLOC_N(pthread_t, numthreads);
   i_vector = MEM_ALLOC_N(size_t, numthreads);
 
   thread_tree = thread_tree_new(numthreads);
 
   for (i = 0; i < numthreads; i++) {
     i_vector[i] = i;
-    pthread_create(&thread_list[i], NULL, f_thread, &i_vector[i]);
+    pthread_create(&(thread_tree->thread_list[i]), NULL, f_thread, &i_vector[i]);
   }
 
   for (i = 0; i < numthreads; i++)
-    pthread_join(thread_list[i], NULL);
+    pthread_join(thread_tree->thread_list[i], NULL);
 
   thread_tree_free(thread_tree);
 
-  free(thread_list);
   free(i_vector);
 
   return 0;
