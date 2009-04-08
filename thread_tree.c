@@ -15,6 +15,7 @@ void thread_level_free(ThreadLevel *level)
 {
   if (level) {
     free(level->interested);
+    free(level->turn);
     free(level);
   }
 }
@@ -26,8 +27,8 @@ ThreadLevel *thread_level_new(size_t numthreads)
   level = MEM_ALLOC(ThreadLevel);
 
   level->interested = MEM_ALLOC_N(size_t, (numthreads % 2 ? numthreads + 1 : numthreads));
-  level->n_elem = numthreads;
-  level->turn = 0;
+  level->n_elem = (numthreads % 2 ? numthreads + 1 : numthreads);
+  level->turn = MEM_ALLOC_N(size_t, level->n_elem / 2);
 
   return level;
 }

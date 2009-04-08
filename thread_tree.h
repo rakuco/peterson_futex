@@ -11,7 +11,7 @@ typedef struct
 {
   size_t *interested;
   size_t n_elem;
-  size_t turn;
+  size_t *turn;
 } ThreadLevel;
 
 typedef struct
