@@ -1,0 +1,100 @@
+MC514 - 2009s1
+Raphael Kubo da Costa - RA 072201
+Projeto 2
+=================================
+
+1. Overview
+-----------
+Este projeto estende o algoritmo de Peterson de acesso a regiões críticas para N threads e substitui a espera ocupada por futexes.
+
+2. Arquivos
+-----------
+Além do Makefile e deste README, o projeto possui os seguintes arquivos:
+
+  * camp.c: Código principal, com a função main e as funções de acesso à
+            região crítica.
+
+  * camp_errado.c: Código principal errado (ver seção 4).
+
+  * cli.{c,h}: Manipulação da linha de comando, com interpretação do número
+               de threads que devem ser utilizadas.
+
+  * futex.{c,h}: Wrappers sobre a chamada SYS_futex com FUTEX_WAIT e FUTEX_WAKE.
+
+  * mem.{c,h}: Gerenciamento de memória.
+
+  * thread_tree.{c,h}: Estrutura de dados que representa o campeonato de threads.
+
+3. Funcionamento
+----------------
+Há duas dificuldades envolvidas neste projeto.
+
+Em primeiro lugar, é preciso converter o algoritmo original de Peterson para acesso a região crítica entre duas threads, retirando a espera ocupada e utilizando futexes em seu lugar.
+
+A segunda dificuldade é generalizar o problema para N threads, criando diversas instâncias do problema original para se resolver.
+
+Para o primeiro problema, a seguinte substituição de código é suficiente:
+
+  Peterson original
+  *****************
+  Thread 0:
+    interesse[0] = 1;
+    ultimo = 0;
+    while (ultimo == 0 && interesse[1]);
+    /* Acesso à região crítica */
+    interesse[0] = 0;
+
+  Thread 1:
+    interesse[1] = 1;
+    ultimo = 1;
+    while (ultimo == 1 && interesse[0]);
+    /* Acesso à região crítica */
+    interesse[1] = 0;
+
+  Futex
+  *****
+  Thread 0:
+    interesse[0] = 1;
+    ultimo = 0;
+    if (interesse[1])
+      futex_wait(&ultimo, 0);
+    /* Acesso à região crítica */
+    interesse[0] = 0;
+    futex_wake(&ultimo, INT_MAX);
+
+  Thread 1:
+    interesse[1] = 1;
+    ultimo = 1;
+    if (interesse[0])
+      futex_wait(&ultimo, 1);
+    /* Acesso à região crítica */
+    interesse[1] = 0;
+    futex_wake(&ultimo, INT_MAX);
+
+Dessa maneira, a espera ocupada com o loop torna-se desnecessária.
+
+Já para resolver o segundo problema, faz-se necessário usar algumas estruturas de dados mais complexas.
+
+3.1. Generalizando com futex
+****************************
+Quando o problema envolve N threads em vez de 2, é necessário quebrar o problema maior em vários problemas com 2 threads. Tem-se uma estrutura de árvore, onde inicialmente as threads competem com sua vizinha (se for a n-ésima thread, n ímpar, compete-se com a vizinha esquerda; se n for par, compete-se com a vizinha á direita).
+
+O vencedor da disputa sobe ao próximo nível da árvore e compete com o vencedor ao seu lado, e assim sucessivamente até chegar ao último nível e ter acesso à região crítica.
+
+Para a representação dessa árvore de campeonato e de seus níveis foram usadas, respectivamente, as estruturas ThreadTree e ThreadLevel.
+
+Dado o número inicial de threads, obtém-se o número total de níveis necessários para que se saia de N threads e se chegue a 2 threads. Esse número é obtido dividindo o número de threads por 2 até se chegar a zero. Em cada nível, aloca-se uma estrutura ThreadLevel com o número de threads que disputarão acesso naquele nível. Se o número for ímpar, aloca-se uma posição a mais para que a disputa ocorra normalmente.
+
+Em cada nível, existe um array turn e um array interested. O array interested possui uma quantidade de posições igual ao número de threads daquele nível (ThreadLevel::n_elem) e serve para que as threads interessadas em acessar a região crítica marquem seu interesse. O array turn, por sua vez, possui metade do número de threads daquele nível, pois vale para cada duas threads e indica de qual das duas é o turno durante a competição.
+
+O algoritmo em f_thread utiliza a função enter_critical para tentar subir todos os níveis na competição. Se sua thread adversária já tiver percorrido esse caminho, a thread atual bloqueará até que a outra termine de acessar a região crítica.
+
+A solução reside no fato das threads "subirem" de nível e possuírem adversárias diferentes em cada nível até que todas tenham acessado a região crítica.
+
+4. Versão errada
+----------------
+Foi pedida também uma versão errada do programa que mostrasse um número errado junto a uma thread para indicar que a região crítica não estava sendo fechada corretamente.
+
+Há várias maneiras de se fazer isso. Uma delas, pequena e que pode pegar um programador desatento é alterar o segundo parâmetro passado para futex_wait na linha 55 de camp.c -- em vez de fazer a thread esperar caso a thread adversária esteja interessada e o turno seja da thread atual, a thread deve esperar quando é o turno da thread adversária.
+
+Assim, na maioria dos casos o valor impresso junto ao número da thread não corresponde ao número da thread.
