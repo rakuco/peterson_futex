@@ -73,17 +73,13 @@ ThreadTree *thread_tree_new(size_t numthreads)
   tree->tree = NULL;
   tree->thread_list = MEM_ALLOC_N(pthread_t, numthreads);
 
-  /* Always pad to the previous even number */
-  threads_left = (numthreads % 2 ? numthreads - 1 : numthreads);
-
-  while (threads_left) {
+  for (threads_left = numthreads; threads_left > 0; threads_left /= 2) {
     level = thread_level_new(numthreads);
 
     tree->tree = realloc(tree->tree, (height * sizeof(tree->tree)) + sizeof(ThreadLevel*));
     tree->tree[height] = level;
 
-    ++height;
-    threads_left = threads_left / 2;
+    height++;
   }
 
   tree->height = height;
