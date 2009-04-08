@@ -29,30 +29,10 @@
 #include "mem.h"
 #include "thread_tree.h"
 
-/* Número de vezes que uma thread deve entrar na região crítica. */
-#define N_VEZES 3
+#define TIMES_TO_RUN 3 /**< Number of times a thread should enter the critical region */
 
-/* Variável compartilhada */
-volatile int s = 0;
-
-/* Variáveis de controle para a final. */
-int ultimo_final = 0;
-int interesse_final[2] = { 0, 0 };
-
-/* Variáeis de controle para a partida
-   entre a thread 0 e a thread 1.      */
-int ultimo_01 = 0;
-int interesse_01[2] = { 0, 0 };
-
-/* Variáveis de controle para a partida
-   entre a thread 2 e a thread 3.      */
-int ultimo_23 = 0;
-int interesse_23[2] = { 0, 0 };
-
-int ultimo = 0;
-int interesse[2] = {0, 0};
-
-static ThreadTree *thread_tree;
+static volatile int s = 0; /**< The shared variable that will be modified */
+static ThreadTree *thread_tree; /**< The thread tree which the competing threads will use */
 
 size_t get_other(size_t thread_id)
 {
@@ -229,7 +209,6 @@ int main(int argc, char *argv[])
   }
 
   i_vector = MEM_ALLOC_N(size_t, numthreads);
-
   thread_tree = thread_tree_new(numthreads);
 
   for (i = 0; i < numthreads; i++) {
@@ -241,7 +220,6 @@ int main(int argc, char *argv[])
     pthread_join(thread_tree->thread_list[i], NULL);
 
   thread_tree_free(thread_tree);
-
   free(i_vector);
 
   return 0;
