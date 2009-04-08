@@ -47,7 +47,7 @@ static void enter_critical(ThreadTree *tree, size_t level, size_t thread_id)
   assert(thread_id < tree->tree[level]->n_elem);
  
   other = (thread_id % 2 ? thread_id - 1 : thread_id + 1);
-  turn_pos = thread_tree_get_turn_pos(thread_id);
+  turn_pos = thread_level_get_turn_pos(thread_id);
 
   thread_tree_show_interest(tree, level, thread_id);
 
@@ -73,7 +73,7 @@ static void leave_critical(ThreadTree *tree, size_t level, size_t thread_id)
   assert(level < tree->height);
   assert(thread_id < tree->tree[level]->n_elem);
 
-  turn_pos = thread_tree_get_turn_pos(thread_id);
+  turn_pos = thread_level_get_turn_pos(thread_id);
 
   tree->tree[level]->interested[thread_id] = 0;
   futex_wake(&(tree->tree[level]->turn[turn_pos]), INT_MAX);

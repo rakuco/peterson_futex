@@ -20,6 +20,11 @@ void thread_level_free(ThreadLevel *level)
   }
 }
 
+size_t thread_level_get_turn_pos(size_t thread_id)
+{
+  return thread_id/2;
+}
+
 ThreadLevel *thread_level_new(size_t numthreads)
 {
   ThreadLevel *level;
@@ -53,11 +58,6 @@ size_t thread_tree_get_height(ThreadTree *tree)
   assert(tree);
 
   return tree->height;
-}
-
-size_t thread_tree_get_turn_pos(size_t thread_id)
-{
-  return thread_id/2;
 }
 
 ThreadTree *thread_tree_new(size_t numthreads)
@@ -94,7 +94,7 @@ void thread_tree_show_interest(ThreadTree *tree, size_t level, size_t thread_id)
   assert(tree);
   assert(level < thread_tree_get_height(tree));
 
-  turn_pos = thread_tree_get_turn_pos(thread_id);
+  turn_pos = thread_level_get_turn_pos(thread_id);
 
   tree->tree[level]->interested[thread_id] = 1;
   tree->tree[level]->turn[turn_pos] = thread_id;
