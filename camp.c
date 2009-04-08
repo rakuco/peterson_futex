@@ -52,17 +52,28 @@ int interesse_23[2] = { 0, 0 };
 int ultimo = 0;
 int interesse[2] = {0, 0};
 
+void enter_critical(size_t thread_id)
+{
+  interesse[thread_id] = 1;
+  ultimo = thread_id;
+
+  if (interesse[1 - thread_id])
+    futex_wait(&ultimo, thread_id);
+}
+
+void leave_critical(size_t thread_id)
+{
+  interesse[thread_id] = 0;
+  futex_wake(&ultimo, INT_MAX);
+}
+
 void *f_thread(void *v)
 {
   size_t i;
   size_t thread_id = *(size_t *)v;
 
   for (i = 0; i < N_VEZES; i++) {
-    interesse[thread_id] = 1;
-    ultimo = thread_id;
-
-    if (interesse[1 - thread_id])
-      futex_wait(&ultimo, thread_id);
+    enter_critical(thread_id);
 
     s = thread_id;
 
@@ -70,8 +81,7 @@ void *f_thread(void *v)
 
     printf("Thread %d, s = %d, i = %d\n", thread_id, s, i);
 
-    interesse[thread_id] = 0;
-    futex_wake(&ultimo, INT_MAX);
+    leave_critical(thread_id);
 
     sleep(1);
   }
