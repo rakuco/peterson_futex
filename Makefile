@@ -12,8 +12,8 @@ DOXYDIR=${PWD}/doc
 all:
 	$(CC) $(CFLAGS) $(LDFLAGS) $(SRC) -o $(OUTPUT)
 
-#doc:
-#	$(DOXYGEN) $(DOXYCONF)
+doc:
+	$(DOXYGEN) $(DOXYCONF)
 
 clean:
 	rm -fr $(OUTPUT) $(DOXYDIR)
