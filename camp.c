@@ -33,6 +33,8 @@
 /* Variável compartilhada */
 volatile int s = 0;
 
+pthread_t *thread_list;
+
 /* Variáveis de controle para a final. */
 int ultimo_final = 0;
 int interesse_final[2] = { 0, 0 };
@@ -180,7 +182,6 @@ int main(int argc, char *argv[])
 {
   size_t i;
   int numthreads;
-  pthread_t thr0, thr1, thr2, thr3;
 
   numthreads = cli_get_thread_count(argc, argv);
   if (!numthreads) {
@@ -188,23 +189,15 @@ int main(int argc, char *argv[])
     exit(2);
   }
 
-#if 0
+  thread_list = MEM_ALLOC_N(pthread_t, numthreads);
+
   for (i = 0; i < numthreads; i++)
     pthread_create(&thread_list[i], NULL, f_thread, NULL);
 
   for (i = 0; i < numthreads; i++)
     pthread_join(thread_list[i], NULL);
-#endif
 
-  pthread_create(&thr0, NULL, f_thread_0, NULL);
-  pthread_create(&thr1, NULL, f_thread_1, NULL);
-  pthread_create(&thr2, NULL, f_thread_2, NULL);
-  pthread_create(&thr3, NULL, f_thread_3, NULL);
-
-  pthread_join(thr0, NULL); 
-  pthread_join(thr1, NULL); 
-  pthread_join(thr2, NULL); 
-  pthread_join(thr3, NULL); 
+  free(thread_list);
 
   return 0;
 }
