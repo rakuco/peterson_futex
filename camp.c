@@ -49,12 +49,31 @@ int interesse_01[2] = { 0, 0 };
 int ultimo_23 = 0;
 int interesse_23[2] = { 0, 0 };
 
+int ultimo = 0;
+int interesse[2] = {0, 0};
+
 void *f_thread(void *v)
 {
   int i;
   int thread_id = *(int *)v;
 
   for (i = 0; i < N_VEZES; i++) {
+    interesse[thread_id] = 1;
+    ultimo = thread_id;
+
+    if (interesse[1 - thread_id])
+      futex_wait(&ultimo, thread_id);
+
+    s = thread_id;
+
+    sleep(1);
+
+    printf("Thread %d, s = %d, i = %d\n", thread_id, s, i);
+
+    interesse[thread_id] = 0;
+    futex_wake(&ultimo, INT_MAX);
+
+    sleep(1);
   }
 
   return NULL;
