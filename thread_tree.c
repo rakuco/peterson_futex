@@ -26,6 +26,7 @@ ThreadLevel *thread_level_new(size_t numthreads)
 
   level = MEM_ALLOC(ThreadLevel);
 
+  /* Always pad numthread to the next even number */
   level->interested = MEM_ALLOC_N(size_t, (numthreads % 2 ? numthreads + 1 : numthreads));
   level->n_elem = (numthreads % 2 ? numthreads + 1 : numthreads);
   level->turn = MEM_ALLOC_N(size_t, level->n_elem / 2);
@@ -62,7 +63,7 @@ size_t thread_tree_get_turn_pos(size_t thread_id)
 ThreadTree *thread_tree_new(size_t numthreads)
 {
   size_t height = 0;
-  size_t onumthreads = numthreads;
+  size_t threads_left;
   ThreadLevel *level;
   ThreadTree *tree;
 
@@ -72,16 +73,17 @@ ThreadTree *thread_tree_new(size_t numthreads)
   tree->tree = NULL;
   tree->thread_list = MEM_ALLOC_N(pthread_t, numthreads);
 
-  numthreads = (numthreads % 2 ? numthreads - 1 : numthreads);
+  /* Always pad to the previous even number */
+  threads_left = (numthreads % 2 ? numthreads - 1 : numthreads);
 
-  while (numthreads) {
-    level = thread_level_new(onumthreads);
+  while (threads_left) {
+    level = thread_level_new(numthreads);
 
-    tree->tree = realloc(tree->tree, height*sizeof(tree->tree) + sizeof(ThreadLevel*));
+    tree->tree = realloc(tree->tree, (height * sizeof(tree->tree)) + sizeof(ThreadLevel*));
     tree->tree[height] = level;
 
     ++height;
-    numthreads = numthreads / 2;
+    threads_left = threads_left / 2;
   }
 
   tree->height = height;
@@ -91,13 +93,13 @@ ThreadTree *thread_tree_new(size_t numthreads)
 
 void thread_tree_show_interest(ThreadTree *tree, size_t level, size_t thread_id)
 {
-  size_t turn;
+  size_t turn_pos;
 
   assert(tree);
   assert(level < thread_tree_get_height(tree));
 
-  turn = thread_tree_get_turn_pos(thread_id);
+  turn_pos = thread_tree_get_turn_pos(thread_id);
 
   tree->tree[level]->interested[thread_id] = 1;
-  tree->tree[level]->turn[turn] = thread_id;
+  tree->tree[level]->turn[turn_pos] = thread_id;
 }
