@@ -200,6 +200,7 @@ void* f_thread_3(void *v) {
 int main(int argc, char *argv[])
 {
   size_t i;
+  size_t *i_vector;
   int numthreads;
 
   numthreads = cli_get_thread_count(argc, argv);
@@ -209,14 +210,18 @@ int main(int argc, char *argv[])
   }
 
   thread_list = MEM_ALLOC_N(pthread_t, numthreads);
+  i_vector = MEM_ALLOC_N(size_t, numthreads);
 
-  for (i = 0; i < numthreads; i++)
-    pthread_create(&thread_list[i], NULL, f_thread, &i);
+  for (i = 0; i < numthreads; i++) {
+    i_vector[i] = i;
+    pthread_create(&thread_list[i], NULL, f_thread, &i_vector[i]);
+  }
 
   for (i = 0; i < numthreads; i++)
     pthread_join(thread_list[i], NULL);
 
   free(thread_list);
+  free(i_vector);
 
   return 0;
 }
