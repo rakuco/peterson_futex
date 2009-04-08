@@ -54,8 +54,8 @@ int interesse[2] = {0, 0};
 
 void *f_thread(void *v)
 {
-  int i;
-  int thread_id = *(int *)v;
+  size_t i;
+  size_t thread_id = *(size_t *)v;
 
   for (i = 0; i < N_VEZES; i++) {
     interesse[thread_id] = 1;
