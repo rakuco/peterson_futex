@@ -57,7 +57,7 @@ static ThreadTree *thread_tree;
 
 size_t get_other(size_t thread_id)
 {
-  return 1 - thread_id;
+  return (thread_id % 2 ? thread_id - 1 : thread_id + 1);
 }
 
 void enter_critical(size_t thread_id)
