@@ -62,6 +62,7 @@ size_t thread_tree_get_turn_pos(size_t thread_id)
 ThreadTree *thread_tree_new(size_t numthreads)
 {
   size_t height = 0;
+  size_t onumthreads = numthreads;
   ThreadLevel *level;
   ThreadTree *tree;
 
@@ -71,10 +72,12 @@ ThreadTree *thread_tree_new(size_t numthreads)
   tree->tree = NULL;
   tree->thread_list = MEM_ALLOC_N(pthread_t, numthreads);
 
-  while (numthreads) {
-    level = thread_level_new(numthreads);
+  numthreads = (numthreads % 2 ? numthreads - 1 : numthreads);
 
-    tree->tree = realloc(tree->tree, sizeof(tree->tree) + sizeof(ThreadLevel*));
+  while (numthreads) {
+    level = thread_level_new(onumthreads);
+
+    tree->tree = realloc(tree->tree, height*sizeof(tree->tree) + sizeof(ThreadLevel*));
     tree->tree[height] = level;
 
     ++height;
