@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
   thread_list = MEM_ALLOC_N(pthread_t, numthreads);
 
   for (i = 0; i < numthreads; i++)
-    pthread_create(&thread_list[i], NULL, f_thread, NULL);
+    pthread_create(&thread_list[i], NULL, f_thread, &i);
 
   for (i = 0; i < numthreads; i++)
     pthread_join(thread_list[i], NULL);
