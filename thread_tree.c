@@ -57,7 +57,7 @@ size_t thread_tree_get_height(ThreadTree *tree)
 
 size_t thread_tree_get_turn_pos(size_t thread_id)
 {
-  return (thread_id % 2 ? (thread_id-1)/2 : thread_id/2);
+  return thread_id/2;
 }
 
 ThreadTree *thread_tree_new(size_t numthreads)
