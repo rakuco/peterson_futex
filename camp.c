@@ -53,12 +53,19 @@ int interesse_23[2] = { 0, 0 };
 int ultimo = 0;
 int interesse[2] = {0, 0};
 
+size_t get_other(size_t thread_id)
+{
+  return 1 - thread_id;
+}
+
 void enter_critical(size_t thread_id)
 {
+  size_t other = get_other(thread_id);
+
   interesse[thread_id] = 1;
   ultimo = thread_id;
 
-  if (interesse[1 - thread_id])
+  if (interesse[other])
     futex_wait(&ultimo, thread_id);
 }
 
