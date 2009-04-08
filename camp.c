@@ -39,159 +39,74 @@ size_t get_other(size_t thread_id)
   return (thread_id % 2 ? thread_id - 1 : thread_id + 1);
 }
 
-void enter_critical(size_t thread_id)
+static void enter_critical(ThreadTree *tree, size_t level, size_t thread_id, size_t real_tid)
 {
-  size_t other = get_other(thread_id);
+  size_t other;
+  size_t turn_pos;
 
-  interesse[thread_id] = 1;
-  ultimo = thread_id;
+  assert(tree);
+  assert(level < tree->height);
+  assert(thread_id < tree->tree[level]->n_elem);
+ 
+  other = get_other(thread_id);
+  turn_pos = thread_tree_get_turn_pos(thread_id);
 
-  if (interesse[other])
-    futex_wait(&ultimo, thread_id);
+  thread_tree_show_interest(tree, level, thread_id);
+
+  if (tree->tree[level]->interested[other])
+    futex_wait(&(tree->tree[level]->turn[turn_pos]), thread_id);
 }
 
-void leave_critical(size_t thread_id)
+static void leave_critical(ThreadTree *tree, size_t level, size_t thread_id, size_t real_tid)
 {
-  interesse[thread_id] = 0;
-  futex_wake(&ultimo, INT_MAX);
+  size_t turn_pos;
+
+  assert(tree);
+  assert(level < tree->height);
+  assert(thread_id < tree->tree[level]->n_elem);
+
+  turn_pos = thread_tree_get_turn_pos(thread_id);
+
+  tree->tree[level]->interested[thread_id] = 0;
+  futex_wake(&(tree->tree[level]->turn[turn_pos]), 1);
 }
 
-void *f_thread(void *v)
+static void *f_thread(void *v)
 {
-  size_t i;
+  size_t i, level;
+  size_t *previous_positions;
   size_t thread_id = *(size_t *)v;
+  size_t tree_height = thread_tree_get_height(thread_tree);
+  size_t dyn_thread_id;
+  size_t dyn_height;
 
-  for (i = 0; i < N_VEZES; i++) {
-    enter_critical(thread_id);
+  previous_positions = MEM_ALLOC_N(size_t, tree_height);
+
+  for (i = 0; i < TIMES_TO_RUN; i++) {
+    dyn_height = tree_height;
+    dyn_thread_id = thread_id;
+
+    for (level = 0; level < tree_height; level++) {
+      previous_positions[level] = dyn_thread_id;
+      enter_critical(thread_tree, level, dyn_thread_id, thread_id);
+      dyn_thread_id = dyn_thread_id / 2;
+      sleep(1);
+    }
 
     s = thread_id;
 
     sleep(1);
 
-    printf("Thread %d, s = %d, i = %d\n", thread_id, s, i);
+    printf("Thread %d, s = %d\n", thread_id, s);
 
-    leave_critical(thread_id);
+    for (level = level - 1; dyn_height > 0; level--, dyn_height--) {
+      leave_critical(thread_tree, level, previous_positions[level], thread_id);
+    }
 
     sleep(1);
   }
 
-  return NULL;
-}
-
-/* Função para a thread 0 */
-void* f_thread_0(void *v) {
-  int i;
-  
-  for (i = 0; i < N_VEZES; i++) {
-
-    interesse_01[0] = 1;
-    ultimo_01 = 0;
-    while (ultimo_01 == 0 && interesse_01[1]) ; 
-
-    sleep(1); /* Sleep entre as partidas */
-     
-    interesse_final[0] = 1;
-    ultimo_final = 0;
-    
-    while (ultimo_final == 0 && interesse_final[1]) ; 
-
-    s = 0;
-    sleep(1); /* Sleep entre a atribuição e a impressão */    
-    printf("Thread 0, s = %d.\n", s); 
-
-    interesse_final[0] = 0;    
-    interesse_01[0] = 0;
-
-    sleep(1); /* Sleep fora da região crítica */
-  }
-
-  return NULL;
-}
-
-/* Função para a thread 1 */
-void* f_thread_1(void *v) {
-  int i;
-  
-  for (i = 0; i < N_VEZES; i++) {
-
-    interesse_01[1] = 1;
-    ultimo_01 = 1;
-    while (ultimo_01 == 1 && interesse_01[0]) ; 
-
-    sleep(1); /* Sleep entre as partidas */
-    
-    interesse_final[0] = 1;
-    ultimo_final = 1;
-    
-    while (ultimo_final == 1 && interesse_final[1]) ; 
-
-    s = 1;
-    sleep(1); /* Sleep entre a atribuição e a impressão */     
-    printf("Thread 1, s = %d.\n", s); 
-
-    interesse_final[0] = 0;    
-    interesse_01[1] = 0;
-
-    sleep(1); /* Sleep fora da região crítica */    
-  }
-
-  return NULL;
-}
-
-/* Função para a thread 2 */
-void* f_thread_2(void *v) {
-  int i;
-  
-  for (i = 0; i < N_VEZES; i++) {
-
-    interesse_23[0] = 1;
-    ultimo_23 = 2;
-    while (ultimo_23 == 2 && interesse_23[1]) ; 
-
-    sleep(1); /* Sleep entre as partidas */
-    
-    interesse_final[1] = 1;
-    ultimo_final = 2;
-    while (ultimo_final == 2 && interesse_final[0]) ; 
-
-    s = 2;
-    sleep(1); /* Sleep entre a atribuição e a impressão */        
-    printf("Thread 2, s = %d.\n", s); 
-
-    interesse_final[1] = 0;    
-    interesse_23[0] = 0;
-
-    sleep(1); /* Sleep fora da região crítica */    
-  }
-
-  return NULL;
-}
-
-/* Função para a thread 3 */
-void* f_thread_3(void *v) {
-  int i;
-  
-  for (i = 0; i < N_VEZES; i++) {
-
-    interesse_23[1] = 1;
-    ultimo_23 = 3;
-    while (ultimo_23 == 3 && interesse_23[0]) ; 
-
-    sleep(1); /* Sleep entre as partidas */
-    
-    interesse_final[1] = 1;
-    ultimo_final = 3;
-    while (ultimo_final == 3 && interesse_final[0]) ; 
-
-    s = 3;
-    sleep(1);    
-    printf("Thread 3, s = %d.\n", s); 
-
-    interesse_final[1] = 0;    
-    interesse_23[1] = 0;
-
-    sleep(1); /* Sleep fora da região crítica */    
-  }
+  free(previous_positions);
 
   return NULL;
 }
