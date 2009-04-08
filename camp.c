@@ -53,6 +53,8 @@ int interesse_23[2] = { 0, 0 };
 int ultimo = 0;
 int interesse[2] = {0, 0};
 
+static ThreadTree *thread_tree;
+
 size_t get_other(size_t thread_id)
 {
   return 1 - thread_id;
@@ -230,6 +232,8 @@ int main(int argc, char *argv[])
   thread_list = MEM_ALLOC_N(pthread_t, numthreads);
   i_vector = MEM_ALLOC_N(size_t, numthreads);
 
+  thread_tree = thread_tree_new(numthreads);
+
   for (i = 0; i < numthreads; i++) {
     i_vector[i] = i;
     pthread_create(&thread_list[i], NULL, f_thread, &i_vector[i]);
@@ -237,6 +241,8 @@ int main(int argc, char *argv[])
 
   for (i = 0; i < numthreads; i++)
     pthread_join(thread_list[i], NULL);
+
+  thread_tree_free(thread_tree);
 
   free(thread_list);
   free(i_vector);
