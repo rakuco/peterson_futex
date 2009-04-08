@@ -26,6 +26,7 @@
 #include "cli.h"
 #include "futex.h"
 #include "mem.h"
+#include "thread_tree.h"
 
 /* Número de vezes que uma thread deve entrar na região crítica. */
 #define N_VEZES 3
