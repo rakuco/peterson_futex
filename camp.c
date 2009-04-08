@@ -34,12 +34,7 @@
 static volatile int s = 0; /**< The shared variable that will be modified */
 static ThreadTree *thread_tree; /**< The thread tree which the competing threads will use */
 
-size_t get_other(size_t thread_id)
-{
-  return (thread_id % 2 ? thread_id - 1 : thread_id + 1);
-}
-
-static void enter_critical(ThreadTree *tree, size_t level, size_t thread_id, size_t real_tid)
+static void enter_critical(ThreadTree *tree, size_t level, size_t thread_id)
 {
   size_t other;
   size_t turn_pos;
@@ -48,7 +43,7 @@ static void enter_critical(ThreadTree *tree, size_t level, size_t thread_id, siz
   assert(level < tree->height);
   assert(thread_id < tree->tree[level]->n_elem);
  
-  other = get_other(thread_id);
+  other = (thread_id % 2 ? thread_id - 1 : thread_id + 1);
   turn_pos = thread_tree_get_turn_pos(thread_id);
 
   thread_tree_show_interest(tree, level, thread_id);
@@ -57,7 +52,7 @@ static void enter_critical(ThreadTree *tree, size_t level, size_t thread_id, siz
     futex_wait(&(tree->tree[level]->turn[turn_pos]), thread_id);
 }
 
-static void leave_critical(ThreadTree *tree, size_t level, size_t thread_id, size_t real_tid)
+static void leave_critical(ThreadTree *tree, size_t level, size_t thread_id)
 {
   size_t turn_pos;
 
@@ -73,40 +68,40 @@ static void leave_critical(ThreadTree *tree, size_t level, size_t thread_id, siz
 
 static void *f_thread(void *v)
 {
-  size_t i, level;
-  size_t *previous_positions;
+  size_t current_id;
+  size_t i;
+  size_t level;
+  size_t *thread_positions;
   size_t thread_id = *(size_t *)v;
   size_t tree_height = thread_tree_get_height(thread_tree);
-  size_t dyn_thread_id;
-  size_t dyn_height;
 
-  previous_positions = MEM_ALLOC_N(size_t, tree_height);
+  thread_positions = MEM_ALLOC_N(size_t, tree_height);
 
   for (i = 0; i < TIMES_TO_RUN; i++) {
-    dyn_height = tree_height;
-    dyn_thread_id = thread_id;
+    current_id = thread_id;
 
+    /* Compete for the critical region until reaching the top */
     for (level = 0; level < tree_height; level++) {
-      previous_positions[level] = dyn_thread_id;
-      enter_critical(thread_tree, level, dyn_thread_id, thread_id);
-      dyn_thread_id = dyn_thread_id / 2;
+      thread_positions[level] = current_id;
+      enter_critical(thread_tree, level, current_id);
+      current_id = current_id / 2;
+
       sleep(1);
     }
 
+    /* Critical region */
     s = thread_id;
-
     sleep(1);
-
     printf("Thread %d, s = %d\n", thread_id, s);
 
-    for (level = level - 1; dyn_height > 0; level--, dyn_height--) {
-      leave_critical(thread_tree, level, previous_positions[level], thread_id);
-    }
+    /* Leave the critical region in all levels */
+    for (; level > 0; level--)
+      leave_critical(thread_tree, level - 1, thread_positions[level - 1]);
 
     sleep(1);
   }
 
-  free(previous_positions);
+  free(thread_positions);
 
   return NULL;
 }
