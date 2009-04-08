@@ -1,28 +1,17 @@
-/* 
- * Campeonato entre 4 threads para acesso à região crítica.
+/*
+ * Raphael Kubo da Costa - RA 072201
  *
- * Modifique este código para funcionar para N threads,
- * com apenas uma função f_thread.
- *
- * Deve ser colocado um comando sleep nos seguintes pontos:
- *   - entre as partidas;
- *   - entre a atribuição à variável s e a impressão do
- *     valor desta variável;
- *   - fora da região crítica.  
- *
- * Substitua as esperas ocupadas por chamadas a futex_wait. 
- *
+ * MC514 - Lab2
  */
 
 #define _GNU_SOURCE
 
 #include <assert.h>
+#include <limits.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-#include <limits.h>
 
 #include "cli.h"
 #include "futex.h"
@@ -34,6 +23,20 @@
 static volatile int s = 0; /**< The shared variable that will be modified */
 static ThreadTree *thread_tree; /**< The thread tree which the competing threads will use */
 
+/**
+ * Enters the critical region for a given level.
+ *
+ * This function marks that the given @p thread_id is interested in acessing
+ * the critical region. If another thread is already in the critical region,
+ * this function blocks until @p futex_wake is called.
+ *
+ * @param tree The ThreadTree in use.
+ * @param level The level in the tree that's being accessed.
+ * @param thread_id The position in the level array.
+ *
+ * @see futex_wake
+ * @see leave_critical
+ */
 static void enter_critical(ThreadTree *tree, size_t level, size_t thread_id)
 {
   size_t other;
@@ -52,6 +55,16 @@ static void enter_critical(ThreadTree *tree, size_t level, size_t thread_id)
     futex_wait(&(tree->tree[level]->turn[turn_pos]), thread_id);
 }
 
+/**
+ * Leaves the critical region for a given level.
+ *
+ * This function marks the given thread is not interested in entering the
+ * critical region and wakes threads waiting to enter the critical region.
+ *
+ * @param tree The ThreadTree in use.
+ * @param level The level in the tree that's being accessed.
+ * @param thread_id The position in the level array.
+ */
 static void leave_critical(ThreadTree *tree, size_t level, size_t thread_id)
 {
   size_t turn_pos;
@@ -63,9 +76,16 @@ static void leave_critical(ThreadTree *tree, size_t level, size_t thread_id)
   turn_pos = thread_tree_get_turn_pos(thread_id);
 
   tree->tree[level]->interested[thread_id] = 0;
-  futex_wake(&(tree->tree[level]->turn[turn_pos]), 1);
+  futex_wake(&(tree->tree[level]->turn[turn_pos]), INT_MAX);
 }
 
+/**
+ * Main thread function.
+ *
+ * This function makes threads compete for access to the critical region.
+ *
+ * @param v Thread number (must be in ascending order for successive calls).
+ */
 static void *f_thread(void *v)
 {
   size_t current_id;
