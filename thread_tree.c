@@ -15,7 +15,6 @@ void thread_level_free(ThreadLevel *level)
 {
   if (level) {
     free(level->interested);
-    free(level->list);
     free(level);
   }
 }
@@ -27,7 +26,6 @@ ThreadLevel *thread_level_new(size_t numthreads)
   level = MEM_ALLOC(ThreadLevel);
 
   level->interested = MEM_ALLOC_N(size_t, (numthreads % 2 ? numthreads + 1 : numthreads));
-  level->list = MEM_ALLOC_N(pthread_t, numthreads);
   level->n_elem = numthreads;
   level->turn = 0;
 
@@ -42,6 +40,7 @@ void thread_tree_free(ThreadTree *tree)
     for (i = 0; i < tree->height; i++)
       thread_level_free(tree->tree[i]);
 
+    free(tree->thread_list);
     free(tree->tree);
     free(tree);
   }
@@ -64,6 +63,7 @@ ThreadTree *thread_tree_new(size_t numthreads)
 
   tree = MEM_ALLOC(ThreadTree);
   tree->tree = NULL;
+  tree->thread_list = MEM_ALLOC_N(pthread_t, numthreads);
 
   while (numthreads) {
     level = thread_level_new(numthreads);

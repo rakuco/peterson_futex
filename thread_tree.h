@@ -10,7 +10,6 @@
 typedef struct
 {
   size_t *interested;
-  pthread_t *list;
   size_t n_elem;
   size_t turn;
 } ThreadLevel;
@@ -18,6 +17,7 @@ typedef struct
 typedef struct
 {
   size_t height;
+  pthread_t *thread_list;
   ThreadLevel **tree;
 } ThreadTree;
 
