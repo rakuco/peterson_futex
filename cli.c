@@ -54,5 +54,5 @@ size_t cli_get_thread_count(int argc, char *argv[])
 
 void cli_show_usage(void)
 {
-  fprintf(stderr, usage_message);
+  fprintf(stderr, "%s", usage_message);
 }
