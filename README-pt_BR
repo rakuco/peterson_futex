@@ -7,9 +7,15 @@ Projeto 2 - Grupo 3
 -----------
 Este projeto estende o algoritmo de Peterson de acesso a regiões críticas para N threads e substitui a espera ocupada por futexes.
 
+O código está licenciado sob a licença BSD e está disponível em <http://github.com/rakuco/peterson_futex>.
+
 2. Arquivos
 -----------
 Além do Makefile e deste README, o projeto possui os seguintes arquivos:
+
+  * COPYING: Licença BSD usada pelo programa.
+
+  * README: README em inglês para o projeto hospedado no Github.
 
   * camp.c: Código principal, com a função main e as funções de acesso à
             região crítica.
