@@ -123,19 +123,19 @@ static void *f_thread(void *v)
       enter_critical(thread_tree, level, current_id);
       current_id = current_id / 2;
 
-      sleep(1);
+      /*sleep(1);*/
     }
 
     /* Critical region */
     s = thread_id;
-    sleep(1);
+    /*sleep(1);*/
     printf("Thread %d, s = %d\n", thread_id, s);
 
     /* Leave the critical region in all levels */
     for (; level > 0; level--)
       leave_critical(thread_tree, level - 1, thread_positions[level - 1]);
 
-    sleep(1);
+    /*sleep(1);*/
   }
 
   free(thread_positions);
