@@ -34,6 +34,7 @@ typedef struct
   size_t *interested; /**< Whether an element is interested in the critical region */
   size_t n_elem;      /**< Number of elements in this level */
   size_t *turn;       /**< Whether it's the turn of a given thread or its sibling's */
+  size_t *last;
 } ThreadLevel;
 
 /**
