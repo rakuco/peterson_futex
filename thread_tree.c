@@ -33,10 +33,6 @@
 #include "mem.h"
 #include "thread_tree.h"
 
-#ifndef __GNUC__
-  #warning There is no guarantee the increments and decrements will be atomic
-#endif
-
 void thread_level_free(ThreadLevel *level)
 {
   if (level) {
@@ -77,16 +73,15 @@ void thread_tree_enter_critical_region(ThreadTree *tree, size_t level, size_t th
   turn_pos = thread_level_get_turn_pos(thread_id);
 
   tree->tree[level]->interested[thread_id] = 1;
-
-  #ifdef __GNUC__
-  __sync_fetch_and_add(&(tree->tree[level]->turn[turn_pos]), 1);
-  #else
-  tree->tree[level]->turn[turn_pos]++;
-  #endif
+  tree->tree[level]->turn[turn_pos] = thread_id;
 
   /* Only block if another thread has declared interest AND has incremented the futex */
-  if ((tree->tree[level]->interested[other]) && (tree->tree[level]->turn[turn_pos] == 2))
-    futex_wait(&(tree->tree[level]->turn[turn_pos]), 2);
+  if ((tree->tree[level]->interested[other])) {
+    if ((futex_wake(&(tree->tree[level]->turn[turn_pos]), 1)) && (tree->tree[level]->turn[turn_pos] == other))
+      futex_wait(&(tree->tree[level]->turn[turn_pos]), other);
+    else
+      futex_wait(&(tree->tree[level]->turn[turn_pos]), thread_id);
+  }
 }
 
 void thread_tree_free(ThreadTree *tree)
@@ -121,17 +116,7 @@ void thread_tree_leave_critical_region(ThreadTree *tree, size_t level, size_t th
   turn_pos = thread_level_get_turn_pos(thread_id);
 
   tree->tree[level]->interested[thread_id] = 0;
-
-#ifdef __GNUC__
-  __sync_fetch_and_sub(&(tree->tree[level]->turn[turn_pos]), 1);
-#else
-  tree->tree[level]->turn[turn_pos]--;
-#endif
-
-  /* Spare a few cycles by not waking the topmost level,
-   * which should not have more than 1 thread */
-  if (tree->tree[level]->turn[turn_pos] > 0)
-    futex_wake(&(tree->tree[level]->turn[turn_pos]), 1);
+  futex_wake(&(tree->tree[level]->turn[turn_pos]), 1);
 }
 
 ThreadTree *thread_tree_new(size_t numthreads)
