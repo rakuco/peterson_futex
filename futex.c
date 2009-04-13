@@ -41,7 +41,7 @@
 int futex_wait(void *addr, int val1)
 {
 #ifdef DEBUG
-  fprintf(stderr, "futex_wait: %u\n", val1);
+  fprintf(stderr, "futex_wait: entering with addr = %u, val1 = %u\n", *addr, val1);
 #endif
 
   return syscall(SYS_futex, addr, FUTEX_WAIT, val1, NULL, NULL, 0);
@@ -50,8 +50,10 @@ int futex_wait(void *addr, int val1)
 int futex_wake(void *addr, int n)
 {
 #ifdef DEBUG
-  fprintf(stderr, "futex_wake: %u\n", n);
-#endif
-
+  size_t ret = syscall(SYS_futex, addr, FUTEX_WAKE, n, NULL, NULL, 0);
+  fprintf(stderr, "futex_wake: woke %u threads\n", ret);
+  return ret;
+#else
   return syscall(SYS_futex, addr, FUTEX_WAKE, n, NULL, NULL, 0);
+#endif
 }
