@@ -72,6 +72,17 @@ size_t thread_level_get_turn_pos(size_t thread_id);
 ThreadLevel *thread_level_new(size_t numthreads);
 
 /**
+* Marks that a thread is interested in entering the critical region.
+*
+* @param tree A @p ThreadTree
+* @param level The level in the tree.
+* @param thread_id The thread number in the level.
+*
+* @see thread_tree_leave_critical_region
+*/
+void thread_tree_enter_critical_region(ThreadTree *tree, size_t level, size_t thread_id);
+
+/**
  * Frees memory allocated to a given @p ThreadTree.
  *
  * @param tree The structure whose memory will be freed.
@@ -94,9 +105,9 @@ size_t thread_tree_get_height(ThreadTree *tree);
  * @param level The level in the tree.
  * @param thread_id The thread number in the level.
  *
- * @see thread_tree_show_interest
+ * @see thread_tree_enter_critical_region
  */
-void thread_tree_leave_interest(ThreadTree *tree, size_t level, size_t thread_id);
+void thread_tree_leave_critical_region(ThreadTree *tree, size_t level, size_t thread_id);
 
 /**
  * Creates a new @p ThreadTree.
@@ -106,16 +117,5 @@ void thread_tree_leave_interest(ThreadTree *tree, size_t level, size_t thread_id
  * @return A new @p ThreadTree.
  */
 ThreadTree *thread_tree_new(size_t numthreads);
-
-/**
- * Marks that a thread is interested in entering the critical region.
- *
- * @param tree A @p ThreadTree
- * @param level The level in the tree.
- * @param thread_id The thread number in the level.
- *
- * @see thread_tree_leave_interest
- */
-void thread_tree_show_interest(ThreadTree *tree, size_t level, size_t thread_id);
 
 #endif /* __THREAD_TREE_H */

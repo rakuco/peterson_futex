@@ -65,6 +65,30 @@ ThreadLevel *thread_level_new(size_t numthreads)
   return level;
 }
 
+void thread_tree_enter_critical_region(ThreadTree *tree, size_t level, size_t thread_id)
+{
+  size_t other, turn_pos;
+
+  assert(tree);
+  assert(level < thread_tree_get_height(tree));
+  assert(thread_id < tree->tree[level]->n_elem);
+
+  other = (thread_id % 2 ? thread_id - 1 : thread_id + 1);
+  turn_pos = thread_level_get_turn_pos(thread_id);
+
+  tree->tree[level]->interested[thread_id] = 1;
+
+  #ifdef __GNUC__
+  __sync_fetch_and_add(&(tree->tree[level]->turn[turn_pos]), 1);
+  #else
+  tree->tree[level]->turn[turn_pos]++;
+  #endif
+
+  /* Only block if another thread has declared interest AND has incremented the futex */
+  if ((tree->tree[level]->interested[other]) && (tree->tree[level]->turn[turn_pos] == 2))
+    futex_wait(&(tree->tree[level]->turn[turn_pos]), 2);
+}
+
 void thread_tree_free(ThreadTree *tree)
 {
   size_t i;
@@ -86,7 +110,7 @@ size_t thread_tree_get_height(ThreadTree *tree)
   return tree->height;
 }
 
-void thread_tree_leave_interest(ThreadTree *tree, size_t level, size_t thread_id)
+void thread_tree_leave_critical_region(ThreadTree *tree, size_t level, size_t thread_id)
 {
   size_t turn_pos;
 
@@ -135,28 +159,4 @@ ThreadTree *thread_tree_new(size_t numthreads)
   tree->height = height;
 
   return tree;
-}
-
-void thread_tree_show_interest(ThreadTree *tree, size_t level, size_t thread_id)
-{
-  size_t other, turn_pos;
-
-  assert(tree);
-  assert(level < thread_tree_get_height(tree));
-  assert(thread_id < tree->tree[level]->n_elem);
-
-  other = (thread_id % 2 ? thread_id - 1 : thread_id + 1);
-  turn_pos = thread_level_get_turn_pos(thread_id);
-
-  tree->tree[level]->interested[thread_id] = 1;
-
-#ifdef __GNUC__
-  __sync_fetch_and_add(&(tree->tree[level]->turn[turn_pos]), 1);
-#else
-  tree->tree[level]->turn[turn_pos]++;
-#endif
-
-  /* Only block if another thread has declared interest AND has incremented the futex */
-  if ((tree->tree[level]->interested[other]) && (tree->tree[level]->turn[turn_pos] == 2))
-    futex_wait(&(tree->tree[level]->turn[turn_pos]), 2);
 }
