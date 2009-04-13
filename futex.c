@@ -41,7 +41,7 @@
 int futex_wait(void *addr, int val1)
 {
 #ifdef DEBUG
-  fprintf(stderr, "futex_wait: entering with addr = %u, val1 = %u\n", *addr, val1);
+  fprintf(stderr, "futex_wait: entering with addr = %u, val1 = %u\n", *(size_t *)(addr), val1);
 #endif
 
   return syscall(SYS_futex, addr, FUTEX_WAIT, val1, NULL, NULL, 0);
