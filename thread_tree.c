@@ -26,9 +26,7 @@
 #include <assert.h>
 #include <malloc.h>
 #include <pthread.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include "futex.h"
 #include "mem.h"
 #include "thread_tree.h"
