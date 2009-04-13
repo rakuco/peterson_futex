@@ -79,7 +79,7 @@ void thread_tree_enter_critical_region(ThreadTree *tree, size_t level, size_t th
 
 #ifdef DEBUG
   fprintf(stderr, "enter_critical: level = %u, tid = %u, interest = %u, other interest = %u\n",
-           level, real_tid, this->tree[level]->interested[thread_id], this->tree[level]->interested[other]);
+           level, real_tid, tree->tree[level]->interested[thread_id], tree->tree[level]->interested[other]);
 #endif
 
   /* First wake any sleeping thread.
