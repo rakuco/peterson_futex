@@ -73,7 +73,9 @@ void thread_tree_enter_critical_region(ThreadTree *tree, size_t level, size_t th
   tree->tree[level]->interested[thread_id] = 1;
   tree->tree[level]->turn[turn_pos] = thread_id;
 
-  /* Only block if another thread has declared interest AND has incremented the futex */
+  /* First wake any sleeping thread.
+   * Only then try to put the current thread to sleep. The current thread
+   * may not be put to sleep at all too if it was the other thread's turn. */
   if ((tree->tree[level]->interested[other])) {
     if ((futex_wake(&(tree->tree[level]->turn[turn_pos]), 1)) && (tree->tree[level]->turn[turn_pos] == other))
       futex_wait(&(tree->tree[level]->turn[turn_pos]), other);
