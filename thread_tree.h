@@ -80,7 +80,7 @@ ThreadLevel *thread_level_new(size_t numthreads);
 *
 * @see thread_tree_leave_critical_region
 */
-void thread_tree_enter_critical_region(ThreadTree *tree, size_t level, size_t thread_id);
+void thread_tree_enter_critical_region(ThreadTree *tree, size_t level, size_t thread_id, size_t real_tid);
 
 /**
  * Frees memory allocated to a given @p ThreadTree.
@@ -107,7 +107,7 @@ size_t thread_tree_get_height(ThreadTree *tree);
  *
  * @see thread_tree_enter_critical_region
  */
-void thread_tree_leave_critical_region(ThreadTree *tree, size_t level, size_t thread_id);
+void thread_tree_leave_critical_region(ThreadTree *tree, size_t level, size_t thread_id, size_t real_tid);
 
 /**
  * Creates a new @p ThreadTree.

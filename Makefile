@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -g -ansi -pedantic
+CFLAGS=-Wall -g -ansi -pedantic -DDEBUG
 LDFLAGS=-pthread
 
 OUTPUT=camp

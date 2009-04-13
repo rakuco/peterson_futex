@@ -32,14 +32,26 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
+#ifdef DEBUG
+#include <stdio.h>
+#endif
+
 #include "futex.h"
 
 int futex_wait(void *addr, int val1)
 {
+#ifdef DEBUG
+  fprintf(stderr, "futex_wait: %u\n", val1);
+#endif
+
   return syscall(SYS_futex, addr, FUTEX_WAIT, val1, NULL, NULL, 0);
 }
 
 int futex_wake(void *addr, int n)
 {
+#ifdef DEBUG
+  fprintf(stderr, "futex_wake: %u\n", n);
+#endif
+
   return syscall(SYS_futex, addr, FUTEX_WAKE, n, NULL, NULL, 0);
 }
