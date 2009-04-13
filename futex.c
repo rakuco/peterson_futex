@@ -36,12 +36,10 @@
 
 int futex_wait(void *addr, int val1)
 {
-  return syscall(SYS_futex, addr, FUTEX_WAIT, 
-                 val1, NULL, NULL, 0);
+  return syscall(SYS_futex, addr, FUTEX_WAIT, val1, NULL, NULL, 0);
 }
 
 int futex_wake(void *addr, int n)
 {
-  return syscall(SYS_futex, addr, FUTEX_WAKE, 
-                 n, NULL, NULL, 0);
+  return syscall(SYS_futex, addr, FUTEX_WAKE, n, NULL, NULL, 0);
 }
