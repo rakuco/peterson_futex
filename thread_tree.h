@@ -88,6 +88,17 @@ void thread_tree_free(ThreadTree *tree);
 size_t thread_tree_get_height(ThreadTree *tree);
 
 /**
+ * Marks that a thread is not interested in entering the critical region.
+ *
+ * @param tree A @p ThreadTree
+ * @param level The level in the tree.
+ * @param thread_id The thread number in the level.
+ *
+ * @see thread_tree_show_interest
+ */
+void thread_tree_leave_interest(ThreadTree *tree, size_t level, size_t thread_id);
+
+/**
  * Creates a new @p ThreadTree.
  *
  * @param numthreads The number of threads the initial level of the tree has.
@@ -102,7 +113,9 @@ ThreadTree *thread_tree_new(size_t numthreads);
  * @param tree A @p ThreadTree
  * @param level The level in the tree.
  * @param thread_id The thread number in the level.
- */ 
+ *
+ * @see thread_tree_leave_interest
+ */
 void thread_tree_show_interest(ThreadTree *tree, size_t level, size_t thread_id);
 
 #endif /* __THREAD_TREE_H */
