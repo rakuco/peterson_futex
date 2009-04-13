@@ -64,20 +64,28 @@ Para o primeiro problema, a seguinte substituição de código é suficiente:
   Thread 0:
     interesse[0] = 1;
     ultimo = 0;
-    if (interesse[1])
-      futex_wait(&ultimo, 0);
+    if (interesse[1]) {
+      if ((futex_wake(&ultimo, 1) && (ultimo == 1))
+        futex_wait(&ultimo, 1);
+      else
+        futex_wait(&ultimo, 0);
+    }
     /* Acesso à região crítica */
     interesse[0] = 0;
-    futex_wake(&ultimo, INT_MAX);
+    futex_wake(&ultimo, 1);
 
   Thread 1:
     interesse[1] = 1;
     ultimo = 1;
-    if (interesse[0])
-      futex_wait(&ultimo, 1);
+    if (interesse[0]) {
+      if ((futex_wake(&ultimo, 1) && (ultimo == 0))
+        futex_wait(&ultimo, 0);
+      else
+        futex_wait(&ultimo, 1);
+    }
     /* Acesso à região crítica */
     interesse[1] = 0;
-    futex_wake(&ultimo, INT_MAX);
+    futex_wake(&ultimo, 1);
 
 Dessa maneira, a espera ocupada com o loop torna-se desnecessária. O arquivo desempate.c possui o código todo dessa demonstração.
 
