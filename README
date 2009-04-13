@@ -110,9 +110,7 @@ In each level, there is an array turn and an array interested. The array interes
 
 The algorithm in f_thread uses the function enter_critical to try to ascend all levels in the competition. If the adversary thread has already run that path, the current thread will block until the other finishes accessing the critical region.
 
------------------------------
-camp_errado.c and desempate.c
------------------------------
+-------------
+camp_errado.c
+-------------
 camp_errado.c is a wrong implementation of the solution as required by the assignment. In this case, access to the critical region is not always locked to a single thread a time.
-
-desempate.c, on its turn, is a demonstration of the futex code as a replacement for the busy wait loop in Peterson's original algorithm.

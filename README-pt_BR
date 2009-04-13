@@ -25,8 +25,6 @@ Além do Makefile e deste README, o projeto possui os seguintes arquivos:
   * cli.{c,h}: Manipulação da linha de comando, com interpretação do número
                de threads que devem ser utilizadas.
 
-  * desempate.c: Demonstração do algoritmo de Peterson para 2 threads com futex.
-
   * futex.{c,h}: Wrappers sobre a chamada SYS_futex com FUTEX_WAIT e FUTEX_WAKE.
 
   * mem.{c,h}: Gerenciamento de memória.
@@ -87,7 +85,7 @@ Para o primeiro problema, a seguinte substituição de código é suficiente:
     interesse[1] = 0;
     futex_wake(&ultimo, 1);
 
-Dessa maneira, a espera ocupada com o loop torna-se desnecessária. O arquivo desempate.c possui o código todo dessa demonstração.
+Dessa maneira, a espera ocupada com o loop torna-se desnecessária.
 
 Já para resolver o segundo problema, faz-se necessário usar algumas estruturas de dados mais complexas.
 
