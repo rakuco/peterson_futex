@@ -50,4 +50,4 @@
  */
 void *__memAllocate(size_t numelem, size_t elemsize);
 
-#endif
+#endif /* __MEM_H */
