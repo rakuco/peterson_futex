@@ -105,8 +105,10 @@ int main(int argc, char *argv[])
   for (i = 0; i < numthreads; i++) {
     i_vector[i] = i;
 
-    if (pthread_create(&(thread_tree->thread_list[i]), NULL, f_thread, &i_vector[i]))
-      fprintf(stderr, "Error while creating thread %u. Waiting for other threads to finish.\n", i);
+    if (pthread_create(&(thread_tree->thread_list[i]), NULL, f_thread, &i_vector[i])) {
+      fprintf(stderr, "Could not create thread %u. Aborting...\n", i);
+      exit(EXIT_FAILURE);
+    }
   }
 
   for (i = 0; i < numthreads; i++)
