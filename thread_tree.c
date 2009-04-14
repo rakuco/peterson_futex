@@ -40,7 +40,6 @@ void thread_level_free(ThreadLevel *level)
   if (level) {
     free(level->interested);
     free(level->turn);
-    free(level->last);
     free(level);
   }
 }
@@ -60,7 +59,6 @@ ThreadLevel *thread_level_new(size_t numthreads)
   level->interested = MEM_ALLOC_N(size_t, (numthreads % 2 ? numthreads + 1 : numthreads));
   level->n_elem = (numthreads % 2 ? numthreads + 1 : numthreads);
   level->turn = MEM_ALLOC_N(size_t, level->n_elem / 2);
-  level->last = MEM_ALLOC_N(size_t, level->n_elem / 2);
 
   return level;
 }
@@ -76,7 +74,6 @@ void thread_tree_enter_critical_region(ThreadTree *tree, size_t level, size_t th
   other = (thread_id % 2 ? thread_id - 1 : thread_id + 1);
   turn_pos = thread_level_get_turn_pos(thread_id);
 
-  tree->tree[level]->last[turn_pos] = other;
   tree->tree[level]->interested[thread_id] = 1;
   tree->tree[level]->turn[turn_pos] = thread_id;
 
