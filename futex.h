@@ -32,8 +32,10 @@
  * @param addr The address of the futex.
  * @param val1 The value to compare the futex to.
  *
- * @retval -1 Futex hasn't blocked.
- * @retval 0  Futex has blocked.
+ * @retval 0           Woken by a @p FUTEX_WAKE call.
+ * @retval ETIMEDOUT   The wait has timed out.
+ * @retval EWOULDBLOCK @p addr is not equal to @p val1.
+ * @retval EINTR       A signal has interrupted the wait.
  */
 int futex_wait(void *addr, int val1);
 
