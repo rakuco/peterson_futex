@@ -67,11 +67,12 @@ void thread_tree_enter_critical_region(ThreadTree *tree, size_t level, size_t th
   assert(level < thread_tree_get_height(tree));
   assert(thread_id < tree->tree[level]->n_elem);
 
-  other = (thread_id % 2 ? thread_id - 1 : thread_id + 1);
   turn_pos = thread_level_get_turn_pos(thread_id);
 
   tree->tree[level]->interested[thread_id] = 1;
   tree->tree[level]->turn[turn_pos] = thread_id;
+
+  other = (thread_id % 2 ? thread_id - 1 : thread_id + 1);
 
   while ((tree->tree[level]->interested[other]) &&
          (!futex_wait(&(tree->tree[level]->turn[turn_pos]), thread_id)));
