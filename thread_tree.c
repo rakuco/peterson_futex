@@ -31,10 +31,6 @@
 #include "mem.h"
 #include "thread_tree.h"
 
-#ifdef DEBUG
-#include <stdio.h>
-#endif
-
 void thread_level_free(ThreadLevel *level)
 {
   if (level) {
@@ -77,11 +73,6 @@ void thread_tree_enter_critical_region(ThreadTree *tree, size_t level, size_t th
   tree->tree[level]->interested[thread_id] = 1;
   tree->tree[level]->turn[turn_pos] = thread_id;
 
-#ifdef DEBUG
-  fprintf(stderr, "enter_critical: level = %u, tid = %u, interest = %u, other interest = %u\n",
-           level, real_tid, tree->tree[level]->interested[thread_id], tree->tree[level]->interested[other]);
-#endif
-
   while ((tree->tree[level]->interested[other]) &&
          (!futex_wait(&(tree->tree[level]->turn[turn_pos]), thread_id)));
 }
@@ -116,10 +107,6 @@ void thread_tree_leave_critical_region(ThreadTree *tree, size_t level, size_t th
   assert(thread_id < tree->tree[level]->n_elem);
 
   turn_pos = thread_level_get_turn_pos(thread_id);
-
-#ifdef DEBUG
-  fprintf(stderr, "leave_critical: level = %u, tid = %u\n", level, real_tid);
-#endif
 
   tree->tree[level]->interested[thread_id] = 0;
   futex_wake(&(tree->tree[level]->turn[turn_pos]), 1);
