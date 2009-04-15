@@ -106,3 +106,5 @@ The algorithm in f_thread uses the function enter_critical to try to ascend all 
 camp_errado.c
 -------------
 camp_errado.c is a wrong implementation of the solution as required by the assignment. In this case, access to the critical region is not always locked to a single thread a time.
+
+This way, it is possible that something like "Thread 1, s = 2" happens.
