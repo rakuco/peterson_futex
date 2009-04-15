@@ -59,7 +59,7 @@ ThreadLevel *thread_level_new(size_t numthreads)
   return level;
 }
 
-void thread_tree_enter_critical_region(ThreadTree *tree, size_t level, size_t thread_id, size_t real_tid)
+void thread_tree_enter_critical_region(ThreadTree *tree, size_t level, size_t thread_id)
 {
   size_t other, turn_pos;
 
@@ -100,7 +100,7 @@ size_t thread_tree_get_height(ThreadTree *tree)
   return tree->height;
 }
 
-void thread_tree_leave_critical_region(ThreadTree *tree, size_t level, size_t thread_id, size_t real_tid)
+void thread_tree_leave_critical_region(ThreadTree *tree, size_t level, size_t thread_id)
 {
   size_t turn_pos;
 

@@ -63,7 +63,7 @@ static void *f_thread(void *v)
     /* Compete for the critical region until reaching the top */
     for (level = 0; level < tree_height; level++) {
       thread_positions[level] = current_id;
-      thread_tree_enter_critical_region(thread_tree, level, current_id, thread_id);
+      thread_tree_enter_critical_region(thread_tree, level, current_id);
       current_id = current_id / 2;
 
       sleep(1);
@@ -76,7 +76,7 @@ static void *f_thread(void *v)
 
     /* Leave the critical region in all levels */
     for (; level > 0; level--)
-      thread_tree_leave_critical_region(thread_tree, level - 1, thread_positions[level - 1], thread_id);
+      thread_tree_leave_critical_region(thread_tree, level - 1, thread_positions[level - 1]);
 
     sleep(1);
   }
