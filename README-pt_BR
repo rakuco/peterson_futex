@@ -77,7 +77,7 @@ Para o primeiro problema, a seguinte substituição de código é suficiente:
     interesse[1] = 0;
     futex_wake(&ultimo, 1);
 
-Dessa maneira, a espera ocupada com o loop torna-se desnecessária.
+Dessa maneira, a espera ocupada com o loop é substituída por um loop que "dorme" com o futex_wait em vez de consumir recursos desnecessariamente.
 
 Já para resolver o segundo problema, faz-se necessário usar algumas estruturas de dados mais complexas.
 
