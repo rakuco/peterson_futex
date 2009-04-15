@@ -74,6 +74,7 @@ void thread_tree_enter_critical_region(ThreadTree *tree, size_t level, size_t th
 
   other = (thread_id % 2 ? thread_id - 1 : thread_id + 1);
 
+  futex_wake(&(tree->tree[level]->turn[turn_pos]), 1);
   while ((tree->tree[level]->interested[other]) &&
          (!futex_wait(&(tree->tree[level]->turn[turn_pos]), thread_id)));
 }
