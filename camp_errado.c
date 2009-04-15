@@ -23,7 +23,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <assert.h>
 #include <limits.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -39,62 +38,6 @@
 
 static volatile int s = 0; /**< The shared variable that will be modified */
 static ThreadTree *thread_tree; /**< The thread tree which the competing threads will use */
-
-/**
- * Enters the critical region for a given level.
- *
- * This function marks that the given @p thread_id is interested in acessing
- * the critical region. If another thread is already in the critical region,
- * this function blocks until @p futex_wake is called.
- *
- * @param tree The ThreadTree in use.
- * @param level The level in the tree that's being accessed.
- * @param thread_id The position in the level array.
- *
- * @see futex_wake
- * @see leave_critical
- */
-static void enter_critical(ThreadTree *tree, size_t level, size_t thread_id)
-{
-  size_t other;
-  size_t turn_pos;
-
-  assert(tree);
-  assert(level < tree->height);
-  assert(thread_id < tree->tree[level]->n_elem);
- 
-  other = (thread_id % 2 ? thread_id - 1 : thread_id + 1);
-  turn_pos = thread_level_get_turn_pos(thread_id);
-
-  thread_tree_show_interest(tree, level, thread_id);
-
-  if (tree->tree[level]->interested[other])
-    futex_wait(&(tree->tree[level]->turn[turn_pos]), other);
-}
-
-/**
- * Leaves the critical region for a given level.
- *
- * This function marks the given thread is not interested in entering the
- * critical region and wakes threads waiting to enter the critical region.
- *
- * @param tree The ThreadTree in use.
- * @param level The level in the tree that's being accessed.
- * @param thread_id The position in the level array.
- */
-static void leave_critical(ThreadTree *tree, size_t level, size_t thread_id)
-{
-  size_t turn_pos;
-
-  assert(tree);
-  assert(level < tree->height);
-  assert(thread_id < tree->tree[level]->n_elem);
-
-  turn_pos = thread_level_get_turn_pos(thread_id);
-
-  tree->tree[level]->interested[thread_id] = 0;
-  futex_wake(&(tree->tree[level]->turn[turn_pos]), INT_MAX);
-}
 
 /**
  * Main thread function.
@@ -120,7 +63,7 @@ static void *f_thread(void *v)
     /* Compete for the critical region until reaching the top */
     for (level = 0; level < tree_height; level++) {
       thread_positions[level] = current_id;
-      enter_critical(thread_tree, level, current_id);
+      thread_tree_enter_critical_region(thread_tree, level, current_id, thread_id);
       current_id = current_id / 2;
 
       sleep(1);
@@ -132,8 +75,10 @@ static void *f_thread(void *v)
     printf("Thread %d, s = %d\n", thread_id, s);
 
     /* Leave the critical region in all levels */
-    for (; level > 0; level--)
-      leave_critical(thread_tree, level - 1, thread_positions[level - 1]);
+    for (level = 0; level < tree_height; level++) {
+      thread_tree_leave_critical_region(thread_tree, level, thread_positions[level], thread_id);
+      sleep(1);
+    }
 
     sleep(1);
   }
@@ -161,8 +106,10 @@ int main(int argc, char *argv[])
   for (i = 0; i < numthreads; i++) {
     i_vector[i] = i;
 
-    if (pthread_create(&(thread_tree->thread_list[i]), NULL, f_thread, &i_vector[i]))
-      fprintf(stderr, "Error while creating thread %u. Waiting for other threads to finish.\n", i);
+    if (pthread_create(&(thread_tree->thread_list[i]), NULL, f_thread, &i_vector[i])) {
+      fprintf(stderr, "Could not create thread %u. Aborting...\n", i);
+      exit(EXIT_FAILURE);
+    }
   }
 
   for (i = 0; i < numthreads; i++)
