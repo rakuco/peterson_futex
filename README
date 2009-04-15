@@ -73,12 +73,8 @@ To replace the busy waiting loop with futex calls, the following code is used:
   Thread 0:
     interested[0] = 1;
     turn = 0;
-    if (interested[1]) {
-      if ((futex_wake(&turn, 1) && (turn == 1))
-        futex_wait(&turn, 1);
-      else
-        futex_wait(&turn, 0);
-    }
+    futex_wake(&turn, 1);
+    while ((interested[1]) && (!futex_wait(&turn, 0)));
     /* Access the critical region */
     interested[0] = 0;
     futex_wake(&turn, INT_MAX);
@@ -86,15 +82,11 @@ To replace the busy waiting loop with futex calls, the following code is used:
   Thread 1:
     interested[1] = 1;
     turn = 1;
-    if (interested[0]) {
-      if ((futex_wake(&turn, 1) && (turn == 0))
-        futex_wait(&turn, 0);
-      else
-        futex_wait(&turn, 1);
-    }
+    futex_wake(&turn, 1);
+    while ((interested[0]) && (!futex_wait(&turn, 1)));
     /* Access the critical region */
     interested[1] = 0;
-    futex_wake(&turn, INT_MAX);
+    futex_wake(&turn, 1);
 
 Where futex_wait and futex_wait are just wrappers around syscall(SYS_futex, addr, FUTEX_WAIT/FUTEX_WAKE, val, NULL, NULL, 0).
 
